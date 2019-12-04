@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>view</title>
+    <!-- 开发环境版本，包含了有帮助的命令行警告 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<body>
+<h1>Download</h1>
+<ul id="fileList">
+    <div v-for="item in list">
+        <li>
+            <a  @click="ck" v-bind:href="item">{{item}}</a>
+        </li>
+    </div>
+</ul>
+<script>
+
+    const urlPrefix="https://www.sonydafa.com/cloud/";
+    //const urlPrefix="http://localhost:8080/";
+    let fileList_e=new Vue({
+        el:"#fileList",
+       data:{
+            list:[]
+       },
+        methods:{
+            ck(e){
+                console.log(e.target.innerText);
+            }
+        }
+    });
+    $.ajax({
+        url:urlPrefix+"viewList",
+        type:'GET',
+        success:function(data){
+            let parse = JSON.parse(data);
+            for(let i=0;i<parse.length;i++){
+                let prefix=urlPrefix+"downloadFile/";
+                fileList_e.list.push(prefix+parse[i]);
+            }
+        }
+    });
+</script>
+</body>
+</html>

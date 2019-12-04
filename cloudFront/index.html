@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>cloud storage</h1>
+    <form method="post" enctype="multipart/form-data" id="uploadForm" >
+        <p>上传文件</p>
+        <input type="file" id="uploadFile"/><br/>
+    </form>
+    <button id="submitBtn" @click="click_func">上传</button>
+    <p id="uploadProcess">{{loadSize}}/{{totalSize}},已经完成百分比:{{percent}}%</p>
+    <h2><a href="view.html">下载页面</a></h2>
+    <script>
+        const urlPrefix="https://www.sonydafa.com/cloud/";
+        //const urlPrefix="http://localhost:8080/";
+
+        let xhrOnProgress=function(fun) {
+            xhrOnProgress.onprogress = fun; //绑定监听
+            return function() {
+                var xhr = $.ajaxSettings.xhr();
+                if (typeof xhrOnProgress.onprogress !== 'function')
+                    return xhr;
+                if (xhrOnProgress.onprogress && xhr.upload) {
+                    xhr.upload.onprogress = xhrOnProgress.onprogress;
+                }
+                return xhr;
+            }
+        };
+        let uploadProcess=new Vue({
+            el:"#uploadProcess",
+            data:{
+                totalSize:0,
+                loadSize:0,
+                percent:0.0,
+                fData:null
+            }
+        });
+        let submitBtn=new Vue({
+            el:"#submitBtn",
+            methods:{
+                send(){
+                    console.log("send");
+                    $.ajax({
+                        url:urlPrefix+"uploadFile",
+                        type:'POST',
+                        data:this.fData,
+                        processData:false,
+                        contentType:false,
+                        xhr:xhrOnProgress(function(e){
+                            let percent=e.loaded / e.total;//计算百分比
+                            uploadProcess.loadSize=e.loaded;
+                            uploadProcess.percent=percent*100;
+                            console.log(percent)
+                        }),
+                        success:function(data){
+                            console.log(data);
+                        }
+                    });
+                },
+                click_func(){
+                    let file=document.getElementById("uploadFile").files[0];
+                    this.fData=new FormData();
+                    this.fData.append("file",file);
+                    console.log(this.fData);
+                    uploadProcess.loadSize=file.size;
+                    this.send();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
